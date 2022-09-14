@@ -4,10 +4,44 @@ const calculatorDisplay = document.querySelector("h1");
 const inputBtns = document.querySelectorAll("button");
 const clearBtn = document.getElementById("clear-btn");
 
+let firstValue = 0;
+let operatorValue = "";
+let awaitingNextValue = false;
+
 const sendNumVal = (num) => {
-  // If cur display val is 0, replace it, if not concat number
-  const displayVal = calculatorDisplay.textContent;
-  calculatorDisplay.textContent = displayVal === "0" ? num : displayVal + num;
+  // Replace current display value if first value is entered
+  if (awaitingNextValue) {
+    calculatorDisplay.textContent = num;
+    awaitingNextValue = false;
+  } else {
+    // If cur display val is 0, replace it, if not concat number
+    const displayVal = calculatorDisplay.textContent;
+    calculatorDisplay.textContent = displayVal === "0" ? num : displayVal + num;
+  }
+};
+
+const addDecimal = () => {
+  // If operator pressed, don't add decimal
+  if (awaitingNextValue) return;
+
+  // If no decimal, add one
+  calculatorDisplay.textContent = calculatorDisplay.textContent.includes(".")
+    ? calculatorDisplay.textContent
+    : calculatorDisplay.textContent + ".";
+};
+
+const useOperator = (operator) => {
+  const currentValue = Number(calculatorDisplay.textContent);
+
+  // Assign firstValue if no value
+  !firstValue
+    ? (firstValue = currentValue)
+    : console.log("currentValue", currentValue);
+
+  // Ready for next value, store operator
+  awaitingNextValue = true;
+  operatorValue = operator;
+  console.table(firstValue, operatorValue);
 };
 
 // Add Event Listeners for numbers, operators, decimal buttons
@@ -15,8 +49,19 @@ inputBtns.forEach((inputBtn) => {
   if (inputBtn.classList.length === 0) {
     inputBtn.addEventListener("click", () => sendNumVal(inputBtn.value));
   } else if (inputBtn.classList.contains("operator")) {
-    inputBtn.addEventListener("click", () => sendNumVal(inputBtn.value));
+    inputBtn.addEventListener("click", () => useOperator(inputBtn.value));
   } else if (inputBtn.classList.contains("decimal")) {
-    inputBtn.addEventListener("click", () => sendNumVal(inputBtn.value));
+    inputBtn.addEventListener("click", () => addDecimal());
   }
 });
+
+// Reset all values, display
+const resetAll = () => {
+  firstValue = 0;
+  operatorValue = "";
+  awaitingNextValue = false;
+  calculatorDisplay.textContent = 0;
+};
+
+// Event Listener
+clearBtn.addEventListener("click", resetAll);
